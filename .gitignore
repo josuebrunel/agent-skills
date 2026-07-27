@@ -1,0 +1,10 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor cruft
+*.swp
+*~
+
+# Local Claude Code session settings (not part of the skills themselves)
+.claude/

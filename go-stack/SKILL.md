@@ -44,6 +44,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### Goose — isolated instance pattern
 - Always use Goose's `NewProvider` to create an isolated migration provider rather than relying on Goose's package-level global state. This avoids global config collisions when the app also runs tests or multiple DB connections.
 - Migrations go in a dedicated `migrations/` directory, run through the provider at startup or via a CLI command — not ad hoc SQL scripts.
+- Always expose a `-migrate <up|down|revert>` CLI flag/command (or equivalent subcommand) wired to the Goose provider, so migrations can be run or rolled back without a separate tool — don't ship a service with Goose wired in but no way to invoke it from the CLI.
 
 ### RiverQueue
 - Use River for background/async work (emails, notifications, scheduled jobs, retries) instead of goroutines with manual retry logic.
@@ -52,6 +53,9 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### HTMX + Templ + DaisyUI
 - Server-rendered fragments returned via Templ components, targeted with HTMX attributes (`hx-get`, `hx-post`, `hx-target`, `hx-swap`) rather than building a separate JSON API + JS frontend for typical CRUD/interactive UI.
 - Style with DaisyUI v5 component classes on top of Tailwind; avoid hand-rolled CSS unless DaisyUI doesn't cover the case.
+
+### Documentation
+- Keep project documentation (README, setup docs, API/route docs) in sync with code changes — when a change adds/removes a route, config option, CLI flag, or setup step, update the relevant docs in the same change rather than leaving them stale.
 
 ## When NOT to apply this
 

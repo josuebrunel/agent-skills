@@ -57,6 +57,53 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### Documentation
 - Keep project documentation (README, setup docs, API/route docs) in sync with code changes — when a change adds/removes a route, config option, CLI flag, or setup step, update the relevant docs in the same change rather than leaving them stale.
 
+## Coding standards, security & DRY
+
+Cross-cutting standards that apply on top of the per-tool conventions above.
+
+### Idiomatic, standards-compliant code
+- Follow standard Go idioms: `gofmt`/`goimports`, `go vet`/linter clean, standard naming (MixedCaps, short receiver names, doc comments on exported identifiers starting with the identifier name).
+- Handle errors explicitly — wrap with `fmt.Errorf("...: %w", err)` for context; don't swallow errors or use `panic` for expected/recoverable failures.
+- Keep package boundaries idiomatic (no import cycles, small focused packages) rather than one large `utils` dumping ground.
+
+### Security
+- Never build SQL by string concatenation — use Bob's query builder/parameter binding for all queries (see `references/bob-scan.md`), the primary injection defense in this stack.
+- Validate/sanitize external input (HTTP params, form data, HTMX payloads) at the handler boundary before it reaches business logic or the DB.
+- Never hardcode secrets/API keys/credentials — load from env/config, and never log them.
+- Rely on EzAuth's built-in CSRF/session protections (see `references/ezauth.md`) instead of hand-rolling auth/CSRF; wire every route touching user data through its auth middleware.
+- Enforce least-privilege authz checks (`HasRole` etc.) on every protected handler, not just at the router-group level.
+
+### DRY
+- Before writing a new helper, query, or component, search the codebase for an existing one that does the same thing — reuse/extend it instead of duplicating.
+- Extract shared logic (validation, formatting, query fragments) into a common function/package once used in more than one place, instead of copy-pasting.
+- Applies across layers — Go helpers, Bob query fragments, and Templ components — extending the Templ-composition note above.
+
+### Testing
+- New handlers, jobs, and non-trivial helpers ship with tests in the same change, not as a follow-up.
+- Use table-driven tests with the standard `testing` package as the default; only reach for `testify` if the project already depends on it.
+- Test files live alongside the code they cover (`foo.go` → `foo_test.go`), matching Go convention.
+
+### Structured logging
+- Use `log/slog` with structured key-value fields instead of `fmt.Println`/`log.Printf` — makes logs greppable/parseable.
+- Use consistent log levels (`Debug`/`Info`/`Warn`/`Error`) rather than logging everything at one level.
+- Never log secrets, tokens, or full request/session payloads — ties directly into the Security subsection above.
+
+### Context propagation
+- Thread `context.Context` through handlers → Bob queries → River job args/workers, rather than starting a fresh `context.Background()` deep in the call stack.
+- Respect cancellation/timeouts from the incoming request context so slow DB calls or downstream requests don't outlive a client that's gone away.
+
+### Transaction handling
+- Wrap multi-step DB writes (e.g. create-then-update-related-row) in an explicit Bob transaction with rollback on error, instead of issuing sequential unguarded writes that can leave partial state on failure.
+- Keep transaction scope tight — open it right before the first write, commit/rollback right after the last, don't hold it open across unrelated work.
+
+### Centralized error handling
+- Use a single Echo `HTTPErrorHandler` (or equivalent centralized middleware) that maps errors to consistent HTTP status codes and response shape, instead of ad hoc `c.JSON(500, ...)` scattered per handler.
+- Handlers return/propagate errors (`return err` / `return echo.NewHTTPError(...)`) rather than writing the response directly on every error path.
+
+### Config management
+- Load configuration from environment variables into a single typed config struct once at startup, rather than scattered `os.Getenv` calls throughout the codebase.
+- Fail fast at startup if required config is missing/invalid, instead of discovering it later at request time.
+
 ## When NOT to apply this
 
 If the user explicitly asks for a different framework, database tool, job queue, or frontend approach (e.g. "use Chi instead" or "no HTMX, I want a React SPA here"), follow their explicit request instead of defaulting to this stack.

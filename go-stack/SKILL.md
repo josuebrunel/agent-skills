@@ -1,6 +1,6 @@
 ---
 name: go-stack
-description: Josue's default backend stack for new Go services and features. Use this whenever scaffolding a new Go project, adding a web endpoint, setting up auth, writing a migration, adding a background job, or building a UI fragment — even if the user doesn't name the tools explicitly. Covers Echo v5, Templ, EzAuth, Goose (isolated NewProvider), RiverQueue, HTMX, and DaisyUI v5. Make sure to check this skill before reaching for a different framework, ORM, or auth library, or before writing raw net/http, plain SQL migration tooling, or a different frontend approach — this stack is the default unless the user explicitly asks for something else.
+description: Josue's default backend stack for new Go services and features. Use this whenever scaffolding a new Go project, adding a web endpoint, setting up auth, writing a migration, adding a background job, or building a UI fragment — even if the user doesn't name the tools explicitly. Covers Echo v5, Templ, EzAuth, Goose (isolated NewProvider), RiverQueue, HTMX, and DaisyUI v5, plus the required Makefile and docker-compose.yml scaffolding. Builds on the cross-stack dev-principles skill for general coding standards (DRY, testing, security, logging, error handling, config, transactions) — this skill adds their Go-specific instantiation. Make sure to check this skill before reaching for a different framework, ORM, or auth library, or before writing raw net/http, plain SQL migration tooling, or a different frontend approach — this stack is the default unless the user explicitly asks for something else.
 ---
 
 # Josue's Go Stack
@@ -59,50 +59,37 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 
 ## Coding standards, security & DRY
 
-Cross-cutting standards that apply on top of the per-tool conventions above.
+**Read the `dev-principles` skill for the underlying cross-stack principles (idiomatic code, error handling, security, DRY, testing, logging, context propagation, transactions, centralized error handling, config management).** Below is how each principle is instantiated with this stack's specific tools — apply the general rule via these concrete mechanisms rather than re-deriving it.
 
-### Idiomatic, standards-compliant code
-- Follow standard Go idioms: `gofmt`/`goimports`, `go vet`/linter clean, standard naming (MixedCaps, short receiver names, doc comments on exported identifiers starting with the identifier name).
-- Handle errors explicitly — wrap with `fmt.Errorf("...: %w", err)` for context; don't swallow errors or use `panic` for expected/recoverable failures.
-- Keep package boundaries idiomatic (no import cycles, small focused packages) rather than one large `utils` dumping ground.
+- **Idiomatic code** → `gofmt`/`goimports`, `go vet`/linter clean, standard Go naming (MixedCaps, short receiver names, doc comments on exported identifiers starting with the identifier name).
+- **Error handling** → wrap with `fmt.Errorf("...: %w", err)` for context; don't swallow errors or use `panic` for expected/recoverable failures.
+- **Security** → never build SQL by string concatenation, use Bob's query builder/parameter binding for all queries (see `references/bob-scan.md`); validate/sanitize external input (HTTP params, form data, HTMX payloads) at the handler boundary; rely on EzAuth's built-in CSRF/session protections (see `references/ezauth.md`) instead of hand-rolling auth/CSRF, wiring every route touching user data through its auth middleware; enforce least-privilege authz checks (`HasRole` etc.) on every protected handler, not just at the router-group level.
+- **DRY** → applies across layers: Go helpers, Bob query fragments, and Templ components — extending the Templ-composition note above.
+- **Testing** → new handlers, jobs, and non-trivial helpers ship with tests in the same change; use table-driven tests with the standard `testing` package by default, only reach for `testify` if the project already depends on it; test files live alongside the code they cover (`foo.go` → `foo_test.go`).
+- **Structured logging** → `log/slog` with structured key-value fields instead of `fmt.Println`/`log.Printf`; consistent levels (`Debug`/`Info`/`Warn`/`Error`); never log secrets, tokens, or full request/session payloads.
+- **Context propagation** → thread `context.Context` through handlers → Bob queries → River job args/workers, rather than starting a fresh `context.Background()` deep in the call stack; respect cancellation/timeouts from the incoming request context.
+- **Transaction handling** → wrap multi-step DB writes (e.g. create-then-update-related-row) in an explicit Bob transaction with rollback on error; keep scope tight — open right before the first write, commit/rollback right after the last.
+- **Centralized error handling** → a single Echo `HTTPErrorHandler` (or equivalent centralized middleware) mapping errors to consistent HTTP status codes and response shape; handlers return/propagate errors (`return err` / `return echo.NewHTTPError(...)`) rather than writing the response directly on every error path.
+- **Config management** → load environment variables into a single typed config struct once at startup, rather than scattered `os.Getenv` calls; fail fast at startup if required config is missing/invalid.
 
-### Security
-- Never build SQL by string concatenation — use Bob's query builder/parameter binding for all queries (see `references/bob-scan.md`), the primary injection defense in this stack.
-- Validate/sanitize external input (HTTP params, form data, HTMX payloads) at the handler boundary before it reaches business logic or the DB.
-- Never hardcode secrets/API keys/credentials — load from env/config, and never log them.
-- Rely on EzAuth's built-in CSRF/session protections (see `references/ezauth.md`) instead of hand-rolling auth/CSRF; wire every route touching user data through its auth middleware.
-- Enforce least-privilege authz checks (`HasRole` etc.) on every protected handler, not just at the router-group level.
+## Required project scaffolding: Docker Compose & Makefile
 
-### DRY
-- Before writing a new helper, query, or component, search the codebase for an existing one that does the same thing — reuse/extend it instead of duplicating.
-- Extract shared logic (validation, formatting, query fragments) into a common function/package once used in more than one place, instead of copy-pasting.
-- Applies across layers — Go helpers, Bob query fragments, and Templ components — extending the Templ-composition note above.
+Every go-stack project ships both of these — create them when scaffolding the project, not as an afterthought, and keep them in sync as the project evolves (new compose service, new Makefile target), consistent with the Documentation note above.
 
-### Testing
-- New handlers, jobs, and non-trivial helpers ship with tests in the same change, not as a follow-up.
-- Use table-driven tests with the standard `testing` package as the default; only reach for `testify` if the project already depends on it.
-- Test files live alongside the code they cover (`foo.go` → `foo_test.go`), matching Go convention.
+### Docker Compose
+This is go-stack's instantiation of the generic "local dependencies via Docker Compose" rule in `dev-principles`. `docker-compose.yml` at the repo root defines:
+- A `postgres` service with a named volume and env-based credentials matching the app's config struct.
+- An `app` service built from the project's Dockerfile, so `docker compose up` runs the full stack — DB and app — not just the database.
 
-### Structured logging
-- Use `log/slog` with structured key-value fields instead of `fmt.Println`/`log.Printf` — makes logs greppable/parseable.
-- Use consistent log levels (`Debug`/`Info`/`Warn`/`Error`) rather than logging everything at one level.
-- Never log secrets, tokens, or full request/session payloads — ties directly into the Security subsection above.
-
-### Context propagation
-- Thread `context.Context` through handlers → Bob queries → River job args/workers, rather than starting a fresh `context.Background()` deep in the call stack.
-- Respect cancellation/timeouts from the incoming request context so slow DB calls or downstream requests don't outlive a client that's gone away.
-
-### Transaction handling
-- Wrap multi-step DB writes (e.g. create-then-update-related-row) in an explicit Bob transaction with rollback on error, instead of issuing sequential unguarded writes that can leave partial state on failure.
-- Keep transaction scope tight — open it right before the first write, commit/rollback right after the last, don't hold it open across unrelated work.
-
-### Centralized error handling
-- Use a single Echo `HTTPErrorHandler` (or equivalent centralized middleware) that maps errors to consistent HTTP status codes and response shape, instead of ad hoc `c.JSON(500, ...)` scattered per handler.
-- Handlers return/propagate errors (`return err` / `return echo.NewHTTPError(...)`) rather than writing the response directly on every error path.
-
-### Config management
-- Load configuration from environment variables into a single typed config struct once at startup, rather than scattered `os.Getenv` calls throughout the codebase.
-- Fail fast at startup if required config is missing/invalid, instead of discovering it later at request time.
+### Makefile
+Go-specific requirement (not part of `dev-principles`). Every go-stack project ships a `Makefile` at the repo root with, at minimum, these targets:
+- `build` — compile the binary.
+- `run` — run the app locally.
+- `test` — run the test suite.
+- `lint` — `go vet` / linter (e.g. `golangci-lint`).
+- `migrate-up` / `migrate-down` — wired to the Goose CLI subcommand required in the Goose section above.
+- `docker-up` / `docker-down` — wrap `docker compose up`/`down` for the compose file above.
+- `tidy` — `go mod tidy`.
 
 ## When NOT to apply this
 

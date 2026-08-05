@@ -27,6 +27,8 @@ Skip Phase 1 entirely for small changes to an existing app (a new form, a new en
 
 Build a "high-end," award-worthy look: generous whitespace, consistent spacing scale, confident typography, and a strong sense of depth. Avoid flat, generic SaaS-template looks — the goal is something that feels designed, not scaffolded.
 
+**Mobile-first, intuitive, simple.** Design and build for the smallest viewport first, then progressively enhance up to tablet/desktop — never the reverse. Every screen should be usable by a first-time visitor with no explanation: obvious primary actions, minimal steps to complete a task, no hidden or ambiguous navigation. Favor clarity over cleverness — if a pattern needs a tooltip to be understood, simplify the pattern instead. This applies to both the Phase 1 demo and the Phase 2 real build.
+
 ## Visual direction
 
 - **Color palette**: Derive a small, professional palette from the product's name/purpose rather than defaulting to DaisyUI's stock theme colors untouched. Configure a custom DaisyUI theme (via `@plugin "daisyui/theme"` or the theme config) rather than leaving `data-theme` on a built-in preset when brand identity matters.
@@ -50,7 +52,7 @@ Never ship flat solid-color backgrounds on hero/marketing sections. Use at least
 - **Focus indicators**: never remove default focus outlines without replacing them with an equally visible custom focus state (thick ring, border color shift). Every interactive element must be clearly visible via keyboard navigation.
 - **ARIA**: `aria-label`/`aria-labelledby` on any icon-only interactive element (buttons with no visible text).
 - **JSON-LD**: include a `<script type="application/ld+json">` Schema.org block (`Organization`, `Product`, `LocalBusiness`, etc. as appropriate) describing the page/product for SEO.
-- Mobile-first responsive layout.
+- Mobile-first responsive layout — design the smallest breakpoint first, then scale up (see Design philosophy above).
 
 ## Interaction (HTMX-appropriate — Phase 2 real build only)
 

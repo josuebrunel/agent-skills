@@ -20,6 +20,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 | Background jobs     | RiverQueue    |
 | Frontend interactivity | HTMX      |
 | UI components/styling | DaisyUI v5 (Tailwind-based) |
+| Config | xenv (github.com/josuebrunel/gopkg/xenv) |
 
 ## Conventions
 
@@ -70,7 +71,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 - **Context propagation** → thread `context.Context` through handlers → Bob queries → River job args/workers, rather than starting a fresh `context.Background()` deep in the call stack; respect cancellation/timeouts from the incoming request context.
 - **Transaction handling** → wrap multi-step DB writes (e.g. create-then-update-related-row) in an explicit Bob transaction with rollback on error; keep scope tight — open right before the first write, commit/rollback right after the last.
 - **Centralized error handling** → a single Echo `HTTPErrorHandler` (or equivalent centralized middleware) mapping errors to consistent HTTP status codes and response shape; handlers return/propagate errors (`return err` / `return echo.NewHTTPError(...)`) rather than writing the response directly on every error path.
-- **Config management** → load environment variables into a single typed config struct once at startup, rather than scattered `os.Getenv` calls; fail fast at startup if required config is missing/invalid.
+- **Config management** → load environment variables into a single typed config struct via `github.com/josuebrunel/gopkg/xenv` (struct tags `env`, `default`, `required`) once at startup, instead of scattered `os.Getenv` calls; use nested structs for grouped settings and `xenv.Options{Prefix: "..."}`/`LoadWithOptions` to namespace keys (e.g. `APP_`); fail fast at startup if a `required` field is missing or a value fails to parse.
 
 ## Required project scaffolding: Docker Compose & Makefile
 

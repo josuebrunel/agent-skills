@@ -36,6 +36,10 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Use structured key-value logging instead of unstructured string concatenation — makes logs greppable and machine-parseable.
 - Use consistent log levels (debug/info/warn/error) rather than logging everything at one level.
 - Never log secrets, tokens, or full request/session payloads.
+- Log at boundaries and lifecycle events — startup/shutdown, request handling, background job completion, config load. Emit one line with a concise message plus a handful of structured fields, rather than instrumenting every line of internal flow.
+- Thread a correlation/request ID through the call stack and attach it to every log line for that request, so one client's path can be filtered and grouped together.
+- On error paths, `error`-level lines attach the underlying error and what was being attempted; log it once where it's handled (consistent with Centralized error handling) instead of duplicating it at each propagation point.
+- Set the level by severity, not frequency — `info` for lifecycle, `debug` for detail (kept out of production), `warn`/`error` only for real problems with enough context to reproduce.
 
 ## Context and cancellation propagation
 - Thread cancellation/timeout context through the call stack (request → business logic → downstream calls) rather than starting fresh context deep in the stack.

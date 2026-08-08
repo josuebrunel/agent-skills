@@ -60,6 +60,7 @@ Cross-cutting principles that apply regardless of language or framework. These a
 ## Local dependencies via Docker Compose
 - Any project with local dependencies (database, cache, message queue, etc.) ships a `docker-compose.yml` at the repo root to stand them up — don't require manually-installed local services or undocumented ad hoc `docker run` commands.
 - Create it when scaffolding the project, not as an afterthought. Add a service to it whenever the project gains a new local dependency, so `docker compose up` always reflects what the project actually needs.
+- Use clear, consistent service names reflecting each dependency's role (e.g. `db`, `app`) rather than opaque abbreviations.
 - Exact services and wiring are stack-specific — e.g. see `go-stack` for its postgres + app service setup — this principle just requires that *some* compose file exists and stays current.
 
 ## When NOT to apply this

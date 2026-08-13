@@ -46,6 +46,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 - Always use Goose's `NewProvider` to create an isolated migration provider rather than relying on Goose's package-level global state. This avoids global config collisions when the app also runs tests or multiple DB connections.
 - Migrations go in a dedicated `migrations/` directory, run through the provider at startup or via a CLI command — not ad hoc SQL scripts.
 - Always expose a `-migrate <up|down|revert>` CLI flag/command (or equivalent subcommand) wired to the Goose provider, so migrations can be run or rolled back without a separate tool — don't ship a service with Goose wired in but no way to invoke it from the CLI.
+- Write migration DDL with `IF EXISTS` / `IF NOT EXISTS` guards (per the dev-principles skill) so each numeric migration is idempotent and re-appliable without manual fixups.
 
 ### RiverQueue
 - Use River for background/async work (emails, notifications, scheduled jobs, retries) instead of goroutines with manual retry logic.

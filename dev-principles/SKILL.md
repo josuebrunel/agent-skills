@@ -1,6 +1,6 @@
 ---
 name: dev-principles
-description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, structured logging, context/cancellation propagation, transaction handling, centralized error handling, config management, and standing up local dependencies via Docker Compose. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
+description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, and standing up local dependencies via Docker Compose. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
 ---
 
 # Josue's Development Principles
@@ -48,6 +48,11 @@ Cross-cutting principles that apply regardless of language or framework. These a
 ## Transaction handling
 - Wrap multi-step writes (create-then-update-related-record) in an explicit transaction with rollback on error, instead of issuing sequential unguarded writes that can leave partial state on failure.
 - Keep transaction scope tight — open right before the first write, commit/rollback right after the last.
+
+## Idempotent SQL (IF EXISTS / IF NOT EXISTS)
+- Use `IF EXISTS` / `IF NOT EXISTS` guards in migration/DDL statements so they're safe to apply repeatedly as expected — `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, `DROP ... IF EXISTS`.
+- Prefer these guards over application-level existence pre-checks, which are racy and add a round trip; the DB handles atomicity.
+- Use them consistently in numeric migration files so a migration either fully applies or cleanly no-ops, without manual intervention.
 
 ## Centralized error handling
 - Use a single, centralized place that maps errors to a consistent response shape/status, instead of ad hoc error-to-response logic scattered at every call site.

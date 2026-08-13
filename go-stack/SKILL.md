@@ -1,6 +1,6 @@
 ---
 name: go-stack
-description: Josue's default backend stack for new Go services and features. Use this whenever scaffolding a new Go project, adding a web endpoint, setting up auth, writing a migration, adding a background job, or building a UI fragment — even if the user doesn't name the tools explicitly. Covers Echo v5, Templ, EzAuth, Goose (isolated NewProvider), RiverQueue, HTMX, and DaisyUI v5, plus the required Makefile and docker-compose.yml scaffolding. Builds on the cross-stack dev-principles skill for general coding standards (DRY, testing, security, logging, error handling, config, transactions) — this skill adds their Go-specific instantiation. Make sure to check this skill before reaching for a different framework, ORM, or auth library, or before writing raw net/http, plain SQL migration tooling, or a different frontend approach — this stack is the default unless the user explicitly asks for something else.
+description: Josue's default backend stack for new Go services and features. Use this whenever scaffolding a new Go project, adding a web endpoint, setting up auth, writing a migration, adding a background job, or building a UI fragment — even if the user doesn't name the tools explicitly. Covers Echo v5, Templ, EzAuth, Goose (isolated NewProvider), RiverQueue, HTMX, DaisyUI v5, and Chart.js, plus the required Makefile and docker-compose.yml scaffolding. Builds on the cross-stack dev-principles skill for general coding standards (DRY, testing, security, logging, error handling, config, transactions) — this skill adds their Go-specific instantiation. Make sure to check this skill before reaching for a different framework, ORM, or auth library, or before writing raw net/http, plain SQL migration tooling, or a different frontend approach — this stack is the default unless the user explicitly asks for something else.
 ---
 
 # Josue's Go Stack
@@ -20,6 +20,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 | Background jobs     | RiverQueue    |
 | Frontend interactivity | HTMX      |
 | UI components/styling | DaisyUI v5 (Tailwind-based) |
+| Charts | Chart.js (pinned CDN version) |
 | Config | xenv (github.com/josuebrunel/gopkg/xenv) |
 
 ## Conventions
@@ -55,6 +56,12 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### HTMX + Templ + DaisyUI
 - Server-rendered fragments returned via Templ components, targeted with HTMX attributes (`hx-get`, `hx-post`, `hx-target`, `hx-swap`) rather than building a separate JSON API + JS frontend for typical CRUD/interactive UI.
 - Style with DaisyUI v5 component classes on top of Tailwind; avoid hand-rolled CSS unless DaisyUI doesn't cover the case.
+
+### Chart.js
+- Use Chart.js for any chart/graph need (dashboards, analytics, reports, stats) — don't hand-roll SVG/canvas drawing or generate chart images server-side.
+- Load it from a pinned CDN version (exact version number, no `@latest`) so behavior is reproducible.
+- Serve chart data as JSON embedded in the Templ fragment (via `templ.JS`/`templ.JSON` into the chart config) rather than a separate chart-data JSON API.
+- Because HTMX swaps fragments, re-initialize charts on swap: destroy the previous Chart.js instance before re-creating on the swapped `<canvas>` (e.g. an `hx-on::after-swap` handler keyed off the canvas) to avoid double-instance/canvas-reuse errors.
 
 ### Documentation
 - Keep project documentation (README, setup docs, API/route docs) in sync with code changes — when a change adds/removes a route, config option, CLI flag, or setup step, update the relevant docs in the same change rather than leaving them stale.

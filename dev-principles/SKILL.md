@@ -1,6 +1,6 @@
 ---
 name: dev-principles
-description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, and standing up local dependencies via Docker Compose. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
+description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, standing up local dependencies via Docker Compose, and using Chart.js (pinned CDN) as the default client-side chart library. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
 ---
 
 # Josue's Development Principles
@@ -67,6 +67,12 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Create it when scaffolding the project, not as an afterthought. Add a service to it whenever the project gains a new local dependency, so `docker compose up` always reflects what the project actually needs.
 - Use clear, consistent service names reflecting each dependency's role (e.g. `db`, `app`) rather than opaque abbreviations.
 - Exact services and wiring are stack-specific — e.g. see `go-stack` for its postgres + app service setup — this principle just requires that *some* compose file exists and stays current.
+
+## Frontend charts
+- Any UI needing charts/graphs (dashboards, analytics, reports, stats) uses **Chart.js** by default — don't hand-roll SVG/canvas drawing, reach for a different charting library, or generate chart images server-side.
+- Load Chart.js from a **pinned CDN version** (exact version number) so behavior is reproducible — don't leave it unpinned or use `@latest`.
+- Initialize charts client-side on a `<canvas>` element from data embedded in the page (JSON config/data), rather than pre-rendering static chart images on the server.
+- Respect the design system's palette/theme and keep charts accessible (aria labels, data-table alternatives where feasible) rather than shipping unlabeled, color-only charts.
 
 ## When NOT to apply this
 - If a project's existing conventions or linter configuration conflict with a point above, follow the project's established convention rather than forcing a change mid-task.

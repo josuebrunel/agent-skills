@@ -1,6 +1,6 @@
 ---
 name: dev-principles
-description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, standing up local dependencies via Docker Compose, and using Chart.js (pinned CDN) as the default client-side chart library. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
+description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, granular commits for large tasks, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, standing up local dependencies via Docker Compose, and using Chart.js (pinned CDN) as the default client-side chart library. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
 ---
 
 # Josue's Development Principles
@@ -31,6 +31,12 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - New functionality and non-trivial helpers ship with tests in the same change, not as a follow-up.
 - Prefer table-driven/data-driven tests where the language's testing tools support the pattern.
 - Test files/modules live alongside the code they cover, matching the ecosystem's convention.
+
+## Granular commits for large tasks
+- Break large or multi-step tasks into a sequence of small, logically-scoped commits made as each step completes, instead of one large commit at the end.
+- Each commit should represent one coherent, reviewable unit of work (e.g. one migration, one endpoint, one refactor step) and leave the codebase in a working state.
+- Keep unrelated changes (formatting-only, incidental fixes) in separate commits from the functional change they were noticed alongside.
+- This governs how work is staged into logical chunks as it's produced — it doesn't override the rule to only commit when the user asks.
 
 ## Structured logging
 - Use structured key-value logging instead of unstructured string concatenation — makes logs greppable and machine-parseable.

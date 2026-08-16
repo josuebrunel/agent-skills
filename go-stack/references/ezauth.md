@@ -83,6 +83,40 @@ Known accessible fields on `*models.User` (used directly in ezauth's own docs/ex
 
 Form endpoints (`/auth/login`, `/auth/register`, etc.) auto-enforce CSRF via Fetch Metadata headers (`Sec-Fetch-Site`, `Origin`) — **no hidden token required in Templ forms**. Only generate `ezauth.CSRFTemplateField(r)` / `ezauth.CSRFToken(r)` if a specific integration expects a token to be present. JSON API endpoints (`/auth/api/*`) skip CSRF entirely (Bearer auth, no cookies).
 
+## Form pages (intermediary GET handlers)
+
+`/auth/login` and `/auth/register` are **POST-only**, form-encoded, redirect-driven endpoints — they don't render a form. The app must supply its own `GET` handler (e.g. `/login`, `/register`) that renders the Templ form and POSTs to the EzAuth endpoint. These handlers must live **outside** the `/auth/*` prefix — that whole prefix is wildcard-mounted to `auth.Handler`, so a route at `/auth/login` would collide with it.
+
+Wire them up via env vars so EzAuth's own redirects land on your handler instead of a missing route: `EZAUTH_LOGIN_PAGE_URL=/login`, `EZAUTH_REGISTER_PAGE_URL=/register`. This matters because `LoginRequiredMiddleware` redirects unauthenticated browser requests to `EZAUTH_LOGIN_PAGE_URL`, and a failed login/register POST redirects back to the same page — without a real handler there, or with a mismatched URL, you get a dangling redirect or a redirect loop instead of a rendered form. This is the root cause behind "multiple redirect" errors.
+
+**Gotcha:** don't wrap these `GET` routes in `LoginRequiredMiddleware`/`AuthMiddleware` — an unauthenticated user hitting the login page would then get redirected back to the login page, looping forever. Use `auth.SessionMiddleware` (or no auth middleware) on them instead.
+
+Read flash messages inside the handler to surface validation errors/success banners after EzAuth redirects back post-POST:
+
+```go
+e.GET("/login", func(c echo.Context) error {
+    ctx := c.Request().Context()
+    return render(c, loginPage(auth.GetErrorMessage(ctx), auth.GetSuccessMessage(ctx)))
+})
+e.GET("/register", func(c echo.Context) error {
+    ctx := c.Request().Context()
+    return render(c, registerPage(auth.GetErrorMessage(ctx), auth.GetSuccessMessage(ctx)))
+})
+e.Any("/auth/*", echo.WrapHandler(auth.Handler))
+```
+
+```templ
+templ loginPage(errMsg, successMsg string) {
+    <form method="post" action="/auth/login">
+        <input type="email" name="email" required/>
+        <input type="password" name="password" required/>
+        <button type="submit">Log in</button>
+    </form>
+}
+```
+
+No CSRF hidden field needed (see CSRF section above) — the form just needs a plain `method="post" action="/auth/login"` (or `/auth/register`).
+
 ## Routes ezauth mounts for you
 
 Form-based (cookies + redirects): `POST /auth/register`, `/auth/login`, `/auth/logout`, `/auth/password-reset/request`, `/auth/password-reset/confirm`, `/auth/passwordless/request`, `GET /auth/passwordless/login`, `GET /auth/oauth2/{provider}/login`, `GET /auth/oauth2/{provider}/callback`.

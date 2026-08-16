@@ -36,6 +36,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### EzAuth
 - Use EzAuth for session/auth handling rather than hand-rolling JWT or session logic.
 - Wire it through Echo middleware so protected routes/groups get auth checked consistently.
+- Always add app-side `GET` handlers (e.g. `/login`, `/register`) that render the form and POST to EzAuth's `/auth/login`/`/auth/register` — never link straight to the `/auth/*` POST endpoints. Point `EZAUTH_LOGIN_PAGE_URL`/`EZAUTH_REGISTER_PAGE_URL` at them to avoid redirect loops.
 - **Read `references/ezauth.md` before writing any EzAuth integration code.** It has the setup pattern, middleware table, in-handler helpers, CSRF behavior, full route list, and hook system — read it instead of re-deriving the API from the source or README each time.
 
 ### Bob (query builder) + Scan (row scanning)

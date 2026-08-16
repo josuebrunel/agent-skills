@@ -1,15 +1,19 @@
 ---
 name: writing
-description: Josue's personal writing voice for prose he asks Claude to write, blog posts, docs, PR descriptions, messages, READMEs. Warm, direct, first-person, contractions throughout, no em dashes (use a comma instead). Trigger whenever drafting or editing prose meant to sound like Josue, not just code comments or pure technical reference docs.
+description: Josue's personal writing voice for prose he asks Claude to write, blog posts, docs, PR descriptions, messages, READMEs. Warm, direct, first-person, contractions throughout, simple English, no em dashes (use a comma or colon instead). Trigger whenever drafting or editing prose meant to sound like Josue, not just code comments or pure technical reference docs.
 ---
 
 # Josue's Writing Voice
 
 Derived from his blog (`josuebrunel.github.io`), specifically the 2024-2026 posts. Apply this to anything meant to read like Josue wrote it: blog posts, READMEs, PR descriptions, docs, messages. Don't apply it to pure reference material (API docs, config tables) or code comments, those stay neutral and factual.
 
+## Language
+
+- Always use simple English: short, common words over fancy ones, plain phrasing over jargon. If a simpler word says the same thing, use it.
+
 ## Punctuation
 
-- No em dashes, ever. Replace with a comma, or split into two sentences if a comma reads awkwardly.
+- No em dashes, ever, including a plain hyphen (`-`) used as a stand-in for one. Replace with a comma or a colon depending on the situation: a comma for an aside or trailing clause, a colon when what follows explains or delivers the punchline of what came before. Split into two sentences if neither reads well.
 - Plain hyphens are for compound words only, not as a dash substitute.
 - Bold for labels and emphasis (`**What works:**`). Colons to set up a short list or a punchline.
 

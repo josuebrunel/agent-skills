@@ -80,6 +80,14 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Initialize charts client-side on a `<canvas>` element from data embedded in the page (JSON config/data), rather than pre-rendering static chart images on the server.
 - Respect the design system's palette/theme and keep charts accessible (aria labels, data-table alternatives where feasible) rather than shipping unlabeled, color-only charts.
 
+## Completion review/audit
+- Before declaring a task done, re-run the project's lint, typecheck, and test commands and confirm they pass — don't rely on them having passed earlier in the session.
+- Re-read the full diff of the change, not just the pieces you remember writing, and check it against the principles above: parameterized queries only, no hardcoded secrets, error handling in place, DRY (no accidental duplication of an existing helper), tests shipped for new logic.
+- Scan for accidental leftovers: debug prints, commented-out code, TODO/FIXME markers, stray files, or formatting-only drift mixed into the functional change.
+- Confirm the output is production-safe: no secrets/tokens in code, logs, or committed files; external input validated and authorization enforced on every protected path; no known vulnerable dependency versions or insecure defaults (e.g. debug mode, permissive CORS, weak crypto) left enabled.
+- Confirm any new dependency (database, cache, queue) is reflected in the project's docker-compose.yml and that config/env requirements are documented, not assumed.
+- State explicitly what you verified and what you couldn't verify, rather than silently claiming completion.
+
 ## When NOT to apply this
 - If a project's existing conventions or linter configuration conflict with a point above, follow the project's established convention rather than forcing a change mid-task.
 - If a more specific stack skill is active (e.g. `go-stack` for Go work), follow its concrete instantiation of these principles rather than re-deriving one from scratch.

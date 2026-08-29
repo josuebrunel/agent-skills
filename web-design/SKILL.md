@@ -52,6 +52,7 @@ Never ship flat solid-color backgrounds on hero/marketing sections. Use at least
 - **Focus indicators**: never remove default focus outlines without replacing them with an equally visible custom focus state (thick ring, border color shift). Every interactive element must be clearly visible via keyboard navigation.
 - **ARIA**: `aria-label`/`aria-labelledby` on any icon-only interactive element (buttons with no visible text).
 - **JSON-LD**: include a `<script type="application/ld+json">` Schema.org block (`Organization`, `Product`, `LocalBusiness`, etc. as appropriate) describing the page/product for SEO.
+- **Social sharing meta tags**: every page ships a `<title>` and `<meta name="description">` with real, page-specific copy (per the Content rule below — no generic boilerplate), plus Open Graph (`og:title`, `og:description`, `og:image`, `og:url`, `og:type`) and Twitter Card (`twitter:card` = `summary_large_image`, `twitter:title`, `twitter:description`, `twitter:image`) tags, so links render a proper preview card when shared on Slack, X, iMessage, LinkedIn, etc. `og:image`/`twitter:image` must be an absolute URL to a real, reasonably sized image — social crawlers don't resolve relative paths or fetch placeholder assets.
 - Mobile-first responsive layout — design the smallest breakpoint first, then scale up (see Design philosophy above).
 
 ## Interaction (HTMX-appropriate — Phase 2 real build only)
@@ -70,4 +71,4 @@ The original prompt targeted a fully client-rendered SPA with JS-driven section 
 
 ## One-off static HTML demo spec (Phase 1, or any explicit throwaway request)
 
-Single HTML file, all CSS/JS inline, CDN-loaded CSS framework (Tailwind via script tag for rapid prototyping, or Bootstrap 5+ if requested). JS-based section show/hide for SPA-like nav (no page reloads, dynamic active nav state). Apply all of the Visual direction, Depth and background treatment, Structure & accessibility, and Content sections above. Include the JSON-LD block. Output just the complete HTML.
+Single HTML file, all CSS/JS inline, CDN-loaded CSS framework (Tailwind via script tag for rapid prototyping, or Bootstrap 5+ if requested). JS-based section show/hide for SPA-like nav (no page reloads, dynamic active nav state). Apply all of the Visual direction, Depth and background treatment, Structure & accessibility, and Content sections above. Include the JSON-LD block and the description/Open Graph/Twitter Card meta tags. Output just the complete HTML.

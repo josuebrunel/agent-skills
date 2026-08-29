@@ -32,6 +32,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### Templ
 - `.templ` files live alongside the handlers that render them, or in a dedicated `views/` package — ask which layout the project uses if unclear.
 - Compose templates with layout + partial components rather than duplicating markup; favor small, composable `templ` components that HTMX fragments can target directly.
+- The shared base layout's `<head>` must include `<title>`, meta description, and Open Graph/Twitter Card tags per the `web-design` skill's "Structure & accessibility" section — don't lose this for incremental work that skips `web-design`'s Phase 1 demo.
 
 ### EzAuth
 - Use EzAuth for session/auth handling rather than hand-rolling JWT or session logic.

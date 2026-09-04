@@ -1,6 +1,6 @@
 ---
 name: dev-principles
-description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, granular commits for large tasks, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, standing up local dependencies via Docker Compose, using Chart.js (pinned CDN) as the default client-side chart library, avoiding the N+1 query problem, and naming functions/methods `<DomainNoun><Operation>` (e.g. `UserCreate`) grouped by domain. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
+description: Josue's language-agnostic coding principles — idiomatic code, explicit error handling, security, DRY, testing, granular commits, structured logging, context/cancellation, transactions, idempotent SQL, centralized errors, config via env, local deps via Docker Compose, Chart.js charts, N+1 avoidance, and `<DomainNoun><Operation>` naming. Use for any non-trivial coding task; stack skills add tool-specific instantiation.
 ---
 
 # Josue's Development Principles

@@ -1,6 +1,6 @@
 ---
 name: web-design
-description: Josue's visual design system AND new-app workflow — high-end, award-winning aesthetic with mesh gradients, glassmorphism, WCAG 2.1 AA accessibility, and real copy (no lorem ipsum). Trigger this whenever Josue asks to generate, scaffold, or build a new app or page — even with no design direction given ("build me an app for X") — since the default workflow is to produce an aesthetic HTML/JS demo first, then implement the real thing informed by it. Also trigger for any styling task on existing Templ + HTMX + DaisyUI UI, landing pages, dashboards, or marketing sites, and for standalone single-file HTML demos. Consult this before defaulting to plain DaisyUI defaults, generic Tailwind boilerplate, or jumping straight to Templ components without a design pass first.
+description: Josue's visual design system + new-app workflow — high-end aesthetic (mesh gradients, glassmorphism, WCAG 2.1 AA), real copy (no lorem ipsum), social/OG meta tags. New apps/pages: build an aesthetic HTML/JS demo first, then the real build. Also for styling existing Templ + HTMX + DaisyUI UI and standalone single-file HTML demos — don't default to plain DaisyUI/Tailwind boilerplate without a design pass.
 ---
 
 # Josue's Web Design System & New-App Workflow

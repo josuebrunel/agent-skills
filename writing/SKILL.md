@@ -1,6 +1,6 @@
 ---
 name: writing
-description: Josue's personal writing voice for prose he asks Claude to write, blog posts, docs, PR descriptions, messages, READMEs. Warm, direct, first-person, contractions throughout, simple English, no em dashes (use a comma or colon instead). Trigger whenever drafting or editing prose meant to sound like Josue, not just code comments or pure technical reference docs.
+description: Josue's writing voice — warm, direct, first-person, contractions, simple English, no em dashes (use comma/colon). For prose meant to sound like Josue: blog posts, READMEs, docs, PRs, messages. Not code comments or technical reference.
 ---
 
 # Josue's Writing Voice

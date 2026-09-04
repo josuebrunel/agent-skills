@@ -1,6 +1,6 @@
 ---
 name: go-stack
-description: Josue's default backend stack for new Go services and features. Use this whenever scaffolding a new Go project, adding a web endpoint, setting up auth, writing a migration, adding a background job, or building a UI fragment — even if the user doesn't name the tools explicitly. Covers Echo v5, Templ, EzAuth, Goose (isolated NewProvider), RiverQueue, HTMX, DaisyUI v5, and Chart.js, plus the required Makefile and docker-compose.yml scaffolding. Builds on the cross-stack dev-principles skill for general coding standards (DRY, testing, security, logging, error handling, config, transactions) — this skill adds their Go-specific instantiation. Make sure to check this skill before reaching for a different framework, ORM, or auth library, or before writing raw net/http, plain SQL migration tooling, or a different frontend approach — this stack is the default unless the user explicitly asks for something else.
+description: Josue's default Go backend stack — Echo v5, Templ, EzAuth, Bob+Scan, Goose (isolated NewProvider), RiverQueue, HTMX, DaisyUI v5, Chart.js, xenv; ships Makefile + docker-compose.yml. Use for any new Go project, endpoint, auth, migration, job, or UI; check before reaching for another framework/ORM/frontend — this stack is the default unless the user asks otherwise. Adds Go-specific instantiation of dev-principles.
 ---
 
 # Josue's Go Stack
@@ -32,7 +32,7 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 ### Templ
 - `.templ` files live alongside the handlers that render them, or in a dedicated `views/` package — ask which layout the project uses if unclear.
 - Compose templates with layout + partial components rather than duplicating markup; favor small, composable `templ` components that HTMX fragments can target directly.
-- The shared base layout's `<head>` must include `<title>`, meta description, and Open Graph/Twitter Card tags per the `web-design` skill's "Structure & accessibility" section — don't lose this for incremental work that skips `web-design`'s Phase 1 demo.
+- The shared base layout's `<head>` ships `<title>`, meta description, and Open Graph/Twitter Card tags (see `web-design` §"Structure & accessibility") — don't lose them on incremental work that skips `web-design`.
 
 ### EzAuth
 - Use EzAuth for session/auth handling rather than hand-rolling JWT or session logic.
@@ -70,19 +70,21 @@ This is the default stack for backend/full-stack Go work. Reach for these tools 
 
 ## Coding standards, security & DRY
 
-**Read the `dev-principles` skill for the underlying cross-stack principles (idiomatic code, error handling, security, DRY, testing, logging, context propagation, transactions, centralized error handling, config management).** Below is how each principle is instantiated with this stack's specific tools — apply the general rule via these concrete mechanisms rather than re-deriving it.
+The `dev-principles` skill holds the cross-stack rules; apply them through these Go-specific mechanisms rather than re-deriving them.
 
-- **Idiomatic code** → `gofmt`/`goimports`, `go vet`/linter clean, standard Go naming (MixedCaps, short receiver names, doc comments on exported identifiers starting with the identifier name).
-- **Error handling** → wrap with `fmt.Errorf("...: %w", err)` for context; don't swallow errors or use `panic` for expected/recoverable failures.
-- **Security** → never build SQL by string concatenation, use Bob's query builder/parameter binding for all queries (see `references/bob-scan.md`); validate/sanitize external input (HTTP params, form data, HTMX payloads) at the handler boundary; rely on EzAuth's built-in CSRF/session protections (see `references/ezauth.md`) instead of hand-rolling auth/CSRF, wiring every route touching user data through its auth middleware; enforce least-privilege authz checks (`HasRole` etc.) on every protected handler, not just at the router-group level.
-- **DRY** → applies across layers: Go helpers, Bob query fragments, and Templ components — extending the Templ-composition note above.
-- **Testing** → new handlers, jobs, and non-trivial helpers ship with tests in the same change; use table-driven tests with the standard `testing` package by default, only reach for `testify` if the project already depends on it; test files live alongside the code they cover (`foo.go` → `foo_test.go`).
-- **Structured logging** → `log/slog` with structured key-value fields instead of `fmt.Println`/`log.Printf`; consistent levels (`Debug`/`Info`/`Warn`/`Error`); never log secrets, tokens, or full request/session payloads.
-- **Context propagation** → thread `context.Context` through handlers → Bob queries → River job args/workers, rather than starting a fresh `context.Background()` deep in the call stack; respect cancellation/timeouts from the incoming request context.
-- **Transaction handling** → wrap multi-step DB writes (e.g. create-then-update-related-row) in an explicit Bob transaction with rollback on error; keep scope tight — open right before the first write, commit/rollback right after the last.
-- **Centralized error handling** → a single Echo `HTTPErrorHandler` (or equivalent centralized middleware) mapping errors to consistent HTTP status codes and response shape; handlers return/propagate errors (`return err` / `return echo.NewHTTPError(...)`) rather than writing the response directly on every error path.
-- **Config management** → load environment variables into a single typed config struct via `github.com/josuebrunel/gopkg/xenv` (struct tags `env`, `default`, `required`) once at startup, instead of scattered `os.Getenv` calls; use nested structs for grouped settings and `xenv.Options{Prefix: "..."}`/`LoadWithOptions` to namespace keys (e.g. `APP_`); fail fast at startup if a `required` field is missing or a value fails to parse.
-- **Concurrency** → take advantage of Go's concurrency model (goroutines + channels + `context.Context`) wherever the shape of the work permits — fan-out/fan-in independent calls, parallelize I/O or sub-queries, pipeline stages — instead of serializing work that can run concurrently. Prefer message passing over shared mutable state (reserve `sync.Mutex`/`atomic` for genuine shared-state cases), collect results via `errgroup`/`sync.WaitGroup`, and always bound concurrency (semaphore/worker pool) and propagate cancellation so goroutines can't leak. For small projects and scripts, goroutines/channels are the default even for background work; River, with its durability/retries/scheduling, is the exception reserved for larger services where jobs must survive restarts — there, prefer River over ad hoc goroutines (see the RiverQueue section above).
+| Principle | Go instantiation |
+|---|---|
+| Idiomatic code | `gofmt`/`goimports`, `go vet`/linter clean, MixedCaps, short receivers, doc comments on exported identifiers. |
+| Error handling | Wrap with `fmt.Errorf("...: %w", err)`; no panics for expected/recoverable failures. |
+| Security | Bob parameter binding for all SQL, never string concatenation (see `references/bob-scan.md`); validate/sanitize HTTP params, form data, HTMX payloads at the handler boundary; rely on EzAuth's CSRF/sessions (see `references/ezauth.md`), never hand-rolled auth; auth middleware on every route touching user data; least-privilege `HasRole` authz per protected handler. |
+| DRY | Shared Go helpers, Bob query fragments, Templ components across layers. |
+| Testing | New handlers/jobs/helpers ship tests in the same change; table-driven tests with std `testing` (only `testify` if already a dep); `foo_test.go` beside `foo.go`. |
+| Structured logging | `log/slog` key-value fields, consistent levels, never log secrets/tokens/full payloads. |
+| Context propagation | Thread `context.Context` through handlers → Bob queries → River jobs; respect cancellation/timeouts, no fresh `context.Background()` deep in the stack. |
+| Transactions | Explicit Bob transaction (rollback on error) for multi-step writes; tight scope. |
+| Centralized errors | Single Echo `HTTPErrorHandler` mapping errors → status/response shape; handlers propagate (`return err` / `echo.NewHTTPError(...)`), don't write responses per path. |
+| Config | One typed struct via `github.com/josuebrunel/gopkg/xenv` at startup (`env`/`default`/`required` tags, nested structs, `xenv.Options{Prefix}` → `APP_` keys); fail fast on missing/invalid values. |
+| Concurrency | Fan out parallel I/O with goroutines + channels + `errgroup`, bounded (semaphore/worker pool), cancellation propagated, message passing over shared state. River (durable, retried) only when jobs must survive restarts in larger services; goroutines otherwise. |
 
 ## Required project scaffolding: Docker Compose & Makefile
 
@@ -105,4 +107,4 @@ Go-specific requirement (not part of `dev-principles`). Every go-stack project s
 
 ## When NOT to apply this
 
-If the user explicitly asks for a different framework, database tool, job queue, or frontend approach (e.g. "use Chi instead" or "no HTMX, I want a React SPA here"), follow their explicit request instead of defaulting to this stack.
+If the user explicitly asks for a different framework, ORM, job queue, or frontend approach, follow them — don't default to this stack (see `dev-principles` for the general rule).

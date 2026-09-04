@@ -1,6 +1,6 @@
 ---
 name: dev-principles
-description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, granular commits for large tasks, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, standing up local dependencies via Docker Compose, and using Chart.js (pinned CDN) as the default client-side chart library. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
+description: Josue's core software development principles — idiomatic code, explicit error handling, security hygiene, DRY, testing discipline, granular commits for large tasks, structured logging, context/cancellation propagation, transaction handling, idempotent SQL (IF EXISTS/IF NOT EXISTS), centralized error handling, config management, standing up local dependencies via Docker Compose, using Chart.js (pinned CDN) as the default client-side chart library, avoiding the N+1 query problem, and naming functions/methods `<DomainNoun><Operation>` (e.g. `UserCreate`) grouped by domain. Applies to any language or stack, not just Go — use this for any non-trivial coding task. Stack-specific skills (e.g. go-stack) build on top of this and add the concrete library/tool instantiation of these same principles.
 ---
 
 # Josue's Development Principles
@@ -11,6 +11,8 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Use the language's standard formatter and linter (e.g. `gofmt`/`prettier`/`black`) rather than hand-formatting or ignoring lint warnings.
 - Follow the language/ecosystem's standard naming and documentation conventions instead of inventing your own style.
 - Keep module/package boundaries clean (no import cycles, small focused units) rather than one large catch-all utility dump.
+- Name functions/methods as `<DomainNoun><Operation>` — the noun (domain entity) first, then the verb: `UserCreate` over `CreateUser`, `OrderCancel` over `CancelOrder`, `PaymentRefund` over `RefundPayment`.
+- Group functions by domain/package, so `auth` holds `UserCreate`, `UserUpdate`, etc. — reading a package's surface should yield a coherent catalog of that domain's entities and the operations allowed on them.
 
 ## Error handling
 - Handle errors explicitly at the point they occur — wrap them with context about what was being attempted, don't swallow them silently.
@@ -59,6 +61,12 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Use `IF EXISTS` / `IF NOT EXISTS` guards in migration/DDL statements so they're safe to apply repeatedly as expected — `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, `DROP ... IF EXISTS`.
 - Prefer these guards over application-level existence pre-checks, which are racy and add a round trip; the DB handles atomicity.
 - Use them consistently in numeric migration files so a migration either fully applies or cleanly no-ops, without manual intervention.
+
+## Avoid the N+1 query problem
+- Never fetch a collection, then issue one query per row to load related data (loop-then-query) — this N+1 pattern collapses under load and defeats batching.
+- Batch related-data loads instead: a single join or `IN (...)` query, a subquery/aggregate, or a per-request batch loader (e.g. DataLoader) when the shape varies by request.
+- Watch for the same antipattern hiding in ORM/active-record eager-loading paths and GraphQL resolvers — resolve related records once per parent *collection*, not once per parent instance.
+- Verify query counts (not just result correctness) during testing and review so a regression can't ship silently.
 
 ## Centralized error handling
 - Use a single, centralized place that maps errors to a consistent response shape/status, instead of ad hoc error-to-response logic scattered at every call site.

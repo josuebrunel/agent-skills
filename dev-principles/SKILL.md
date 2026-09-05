@@ -30,9 +30,11 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Applies across every layer of the stack — business logic, data access, and UI/presentation alike.
 
 ## Testing
+- Always run the project's tests after any change — never declare work done, request review, or hand off without tests passing. Run them before finishing a task even if they passed earlier in the session.
 - New functionality and non-trivial helpers ship with tests in the same change, not as a follow-up.
 - Prefer table-driven/data-driven tests where the language's testing tools support the pattern.
 - Test files/modules live alongside the code they cover, matching the ecosystem's convention.
+- If a change is deliberately made without running tests (e.g. tests are broken/absent and out of scope), say so explicitly and explain why, rather than silently skipping.
 
 ## Granular commits for large tasks
 - Break large or multi-step tasks into a sequence of small, logically-scoped commits made as each step completes, instead of one large commit at the end.

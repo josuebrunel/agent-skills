@@ -41,6 +41,7 @@ Cross-cutting principles that apply regardless of language or framework. These a
 - Each commit should represent one coherent, reviewable unit of work (e.g. one migration, one endpoint, one refactor step) and leave the codebase in a working state.
 - Keep unrelated changes (formatting-only, incidental fixes) in separate commits from the functional change they were noticed alongside.
 - This governs how work is staged into logical chunks as it's produced — it doesn't override the rule to only commit when the user asks.
+- When a task is tied to a GitHub ticket, reference it in the commit message with a closing keyword (`Fixes #123`, `Closes #123`, `Resolves #123`) so merging the commit auto-closes the ticket. Every commit that is part of that task's resolution carries the keyword, not just the last one.
 
 ## Structured logging
 - Use structured key-value logging instead of unstructured string concatenation — makes logs greppable and machine-parseable.

@@ -29,6 +29,7 @@ Derived from his blog (`josuebrunel.github.io`), specifically the 2024-2026 post
 - Open with a claim or a small scene, not a rhetorical question: "Every group chat has one guy. You know the one." / "Building a SaaS is full of important decisions."
 - Mix short fragments for emphasis ("That's it." / "The easy part was over.") with normal sentences.
 - Short paragraphs, one idea each.
+- Keep it skimmable: readers should get the gist from headers, bolded leads, and fragments alone, without reading every word.
 
 ## Structure
 
